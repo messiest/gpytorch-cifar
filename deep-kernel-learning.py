@@ -183,7 +183,7 @@ if __name__ == "__main__":
             train(epoch)
             test()
 
-        stat_dict = model.state_dict()
+        state_dict = model.state_dict()
         likelihood_state_dict = likelihood.state_dict()
 
         torch.save(
