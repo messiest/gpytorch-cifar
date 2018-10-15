@@ -110,7 +110,8 @@ def test():
     for data, target in test_loader:
         if CUDA: data, target = data.cuda(), target.cuda()  # no CUDA!
         with torch.no_grad():
-            output = likelihood(model(data))
+            # output = likelihood(model(data))
+            output = model(data)
             print("***" * 40)
             print('output')
             print(type(output))
