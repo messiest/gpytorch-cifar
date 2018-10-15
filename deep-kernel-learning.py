@@ -82,7 +82,7 @@ class DKLModel(gpytorch.Module):
 def train(epoch, lr=0.1):
     model.train()
     likelihood.train()
-    if CUDA: model.cuda(), likelihood.cuda()
+    # if CUDA: model.cuda(), likelihood.cuda()
     mll = gpytorch.mlls.VariationalMarginalLogLikelihood(
         likelihood,
         model,
@@ -104,7 +104,7 @@ def train(epoch, lr=0.1):
 def test():
     model.eval()
     likelihood.eval()
-    if CUDA: model.cuda(), likelihood.cuda()
+    # if CUDA: model.cuda(), likelihood.cuda()
     test_loss = 0
     correct = 0
     for data, target in test_loader:
@@ -158,11 +158,11 @@ if __name__ == "__main__":
     feature_extractor = DenseNetFeatureExtractor(block_config=(6, 6, 6), num_classes=num_classes)
     num_features = feature_extractor.classifier.in_features
 
-    model = DKLModel(feature_extractor, num_dim=num_features)
+    model = DKLModel(feature_extractor, num_dim=num_features).cuda()
     likelihood = gpytorch.likelihoods.SoftmaxLikelihood(
         num_features=model.num_dim,
         n_classes=num_classes,
-    )
+    ).cuda()
 
     n_epochs = 100
     lr = 0.1
