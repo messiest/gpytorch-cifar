@@ -116,8 +116,7 @@ def test():
             print(type(output))
             print(dir(output))
             print("***" * 40)
-            # pred = output.argmax()
-            _, pred = output.max(0)  # index along which you find the max
+            pred = output.argmax()
             print('pred', pred)
             correct += pred.eq(target.view_as(pred)).cpu().sum()
     test_loss /= len(test_loader.dataset)
