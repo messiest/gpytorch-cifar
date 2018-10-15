@@ -125,6 +125,7 @@ def test():
 
 
 if __name__ == "__main__":
+    print("CUDA enabled:", CUDA)
     # Data Augmentation
     normalize = transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761])
     crop = transforms.RandomCrop(32, padding=4)
