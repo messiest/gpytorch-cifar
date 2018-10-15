@@ -111,16 +111,10 @@ def test():
         if CUDA: data, target = data.cuda(), target.cuda()  # no CUDA!
         with torch.no_grad():
             output = likelihood(model(data))
-            print("***" * 40)
-            print('output')
-            print(type(output))
-            print(dir(output))
-            print("***" * 40)
             pred = output.sample()  # .argmax()
-            print('pred', pred)
             correct += pred.eq(target.view_as(pred)).cpu().sum()
     test_loss /= len(test_loader.dataset)
-    print(f'Test Set | Average Loss: {test_loss:.4f}, Accuracy: {100. * correct / len(test_loader.dataset):.3f}%')
+    print(f'Test Set | Average Loss: {test_loss:.6f}, Accuracy: {100. * correct / len(test_loader.dataset):.3f}%')
 
 
 if __name__ == "__main__":
