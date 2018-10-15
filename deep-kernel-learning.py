@@ -118,7 +118,7 @@ def test():
             print("***" * 40)
             pred = output.sample().argmax()
             print('pred', pred)
-            correct += pred.eq(target.view_as(pred)).cpu().sum()
+            correct += pred.eq(target.view_as(pred.item())).cpu().sum()
     test_loss /= len(test_loader.dataset)
     print(f'Test Set | Average Loss: {test_loss:.4f}, Accuracy: {100. * correct / len(tes_loader.dataset):.3f}%')
 
