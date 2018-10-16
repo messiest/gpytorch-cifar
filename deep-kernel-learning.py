@@ -114,6 +114,19 @@ def test():
 
 
 if __name__ == "__main__":
+    # Data Augmentation
+    normalize = transforms.Normalize(
+        mean=[0.5071, 0.4867, 0.4408],
+        std=[0.2675, 0.2565, 0.2761]
+    )
+    crop = transforms.RandomCrop(32, padding=4)
+    flip = transforms.RandomHorizontalFlip()
+    common_trans = [transforms.ToTensor(), normalize]
+
+    train_compose = transforms.Compose([crop, flip] + common_trans)
+    test_compose = transforms.Compose(common_trans)
+
+
     # Download Data
     dataset = 'cifar10'
 
@@ -133,18 +146,6 @@ if __name__ == "__main__":
         num_classes = 100
     else:
         raise RuntimeError('dataset must be either "cifar10" or "cifar100"')
-
-    # Data Augmentation
-    normalize = transforms.Normalize(
-        mean=[0.5071, 0.4867, 0.4408],
-        std=[0.2675, 0.2565, 0.2761]
-    )
-    crop = transforms.RandomCrop(32, padding=4)
-    flip = transforms.RandomHorizontalFlip()
-    common_trans = [transforms.ToTensor(), normalize]
-
-    train_compose = transforms.Compose([crop, flip] + common_trans)
-    test_compose = transforms.Compose(common_trans)
 
     feature_extractor = DenseNetFeatureExtractor(block_config=(6, 6, 6), num_classes=num_classes)
     num_features = feature_extractor.classifier.in_features
