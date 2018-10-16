@@ -19,9 +19,9 @@ from tqdm import tqdm
 from densenet import DenseNet
 
 
-CUDA = torch.cuda.is_available()
+CUDA = torch.cuda.is_available()  # got GPU?
 
-warnings.simplefilter('ignore')
+warnings.simplefilter('ignore')  # filter deprecation warnings
 
 
 class DenseNetFeatureExtractor(DenseNet):
@@ -88,7 +88,7 @@ def train(epoch, lr=0.1):
     desc = "Epoch: {} | Loss: {: 4.4f}"
     pbar = tqdm(train_loader, desc=desc)
     for batch_idx, (data, target) in enumerate(pbar):
-        if CUDA: data, target = data.cuda(), target.cuda()  # no CUDA!
+        if CUDA: data, target = data.cuda(), target.cuda()  # got CUDA?
         optimizer.zero_grad()
         output = model(data)
         loss = -1 * mll(output, target)
@@ -113,6 +113,9 @@ def test():
 
 
 if __name__ == "__main__":
+    dataset = 'cifar10'
+    print(f"{dataset}".upper())
+
     # Data Augmentation
     normalize = transforms.Normalize(
         mean=[0.5071, 0.4867, 0.4408],
@@ -127,8 +130,6 @@ if __name__ == "__main__":
 
 
     # Download Data
-    dataset = 'cifar10'
-
     if dataset == 'cifar10':
         d_func = datasets.CIFAR10
         train_set = datasets.CIFAR10('data', train=True, transform=train_compose, download=True)
@@ -177,7 +178,6 @@ if __name__ == "__main__":
         gamma=0.1,
     )
 
-    print(f"{dataset}".capitalize())
     print("CUDA enabled:", CUDA)
 
     for epoch in range(1, n_epochs + 1):
