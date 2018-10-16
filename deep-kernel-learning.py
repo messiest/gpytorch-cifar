@@ -85,7 +85,7 @@ def train(epoch, lr=0.1):
         num_data=len(train_loader.dataset)
     )
     train_loss = 0.
-    desc = "Epoch: {} | Loss: {: 4.4f}"
+    desc = "Epoch: {:3d} | Loss: {: 4.4f}"
     pbar = tqdm(train_loader, desc=desc)
     for batch_idx, (data, target) in enumerate(pbar):
         if CUDA: data, target = data.cuda(), target.cuda()  # got CUDA?
@@ -109,7 +109,7 @@ def test():
             pred = output.probs.argmax(1)
             correct += pred.eq(target.view_as(pred)).cpu().sum()
     test_loss /= len(test_loader.dataset)
-    print(f'Test Set | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%')
+    print(f' Test Set | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%')
 
 
 if __name__ == "__main__":
