@@ -97,21 +97,20 @@ def train(epoch, lr=0.1):
         output = model(data)
         loss = -1 * mll(output, target)
         loss.backward()
+        optimizer.step()
         if (batch_idx+1) % 50 == 0 or batch_idx == 0:
             pbar.set_description(desc.format(epoch, loss.item()))
-        optimizer.step()
 
 def test():
     model.eval()
     likelihood.eval()
-    # if CUDA: model.cuda(), likelihood.cuda()
     test_loss = 0
     correct = 0
     for data, target in test_loader:
         if CUDA: data, target = data.cuda(), target.cuda()  # no CUDA!
         with torch.no_grad():
             output = likelihood(model(data))
-            pred = output.sample()  # .argmax()
+            pred = output.probs.argmax(1)
             correct += pred.eq(target.view_as(pred)).cpu().sum()
     test_loss /= len(test_loader.dataset)
     print(f'Test Set | Average Loss: {test_loss:.6f}, Accuracy: {100. * correct / len(test_loader.dataset):.3f}%')
@@ -151,11 +150,16 @@ if __name__ == "__main__":
     feature_extractor = DenseNetFeatureExtractor(block_config=(6, 6, 6), num_classes=num_classes)
     num_features = feature_extractor.classifier.in_features
 
-    model = DKLModel(feature_extractor, num_dim=num_features).cuda()
+    model = DKLModel(feature_extractor, num_dim=num_features)
+
     likelihood = gpytorch.likelihoods.SoftmaxLikelihood(
         num_features=model.num_dim,
         n_classes=num_classes,
-    ).cuda()
+    )
+
+    if CUDA:
+        model = model.cuda()
+        likelihood = likelihood.cuda()
 
     n_epochs = 100
     lr = 0.1
@@ -168,22 +172,27 @@ if __name__ == "__main__":
         nesterov=True,
         weight_decay=0,
     )
-    scheduler = MultiStepLR(optimizer, milestones=[0.5 * n_epochs, 0.75 * n_epochs], gamma=0.1)
+    scheduler = MultiStepLR(
+        optimizer,
+        milestones=[0.5 * n_epochs, 0.75 * n_epochs],
+        gamma=0.1,
+    )
 
-    for epoch in range(1, n_epochs + 1):
-        scheduler.step()
+    with warnings.catch_warnings():
+        for epoch in range(1, n_epochs + 1):
+            scheduler.step()
 
-        with gpytorch.settings.use_toeplitz(False), gpytorch.settings.max_preconditioner_size(0):
-            train(epoch)
-            test()
+            with gpytorch.settings.use_toeplitz(False), gpytorch.settings.max_preconditioner_size(0):
+                train(epoch)
+                test()
 
-        state_dict = model.state_dict()
-        likelihood_state_dict = likelihood.state_dict()
+            state_dict = model.state_dict()
+            likelihood_state_dict = likelihood.state_dict()
 
-        torch.save(
-            {
-                'model': state_dict,
-                'likelihood': likelihood_state_dict
-            },
-            'dkl_cifar_checkpoint.dat',
-        )
+            torch.save(
+                {
+                    'model': state_dict,
+                    'likelihood': likelihood_state_dict
+                },
+                'checkpoints/dkl_cifar_checkpoint.dat',
+            )
