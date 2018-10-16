@@ -21,7 +21,6 @@ from densenet import DenseNet
 
 CUDA = torch.cuda.is_available()
 
-
 warnings.simplefilter('ignore')
 
 
@@ -181,22 +180,20 @@ if __name__ == "__main__":
     print(f"{dataset}".capitalize())
     print("CUDA enabled:", CUDA)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter('always')
-        for epoch in range(1, n_epochs + 1):
-            scheduler.step()
+    for epoch in range(1, n_epochs + 1):
+        scheduler.step()
 
-            with gpytorch.settings.use_toeplitz(False), gpytorch.settings.max_preconditioner_size(0):
-                train(epoch)
-                if epoch % 10 == 0:
-                    test()
-                    state_dict = model.state_dict()
-                    likelihood_state_dict = likelihood.state_dict()
+        with gpytorch.settings.use_toeplitz(False), gpytorch.settings.max_preconditioner_size(0):
+            train(epoch)
+            if epoch % 10 == 0:
+                test()
+                state_dict = model.state_dict()
+                likelihood_state_dict = likelihood.state_dict()
 
-                    torch.save(
-                        {
-                            'model': state_dict,
-                            'likelihood': likelihood_state_dict
-                        },
-                        'checkpoints/dkl_cifar_checkpoint.dat',
-                    )
+                torch.save(
+                    {
+                        'model': state_dict,
+                        'likelihood': likelihood_state_dict
+                    },
+                    'checkpoints/dkl_cifar_checkpoint.dat',
+                )
