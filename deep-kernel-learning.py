@@ -30,7 +30,6 @@ class DenseNetFeatureExtractor(DenseNet):
         features = self.features(x)
         out = F.relu(features, inplace=True)
         out = F.avg_pool2d(out, kernel_size=self.avgpool_size).view(features.size(0), -1)
-
         return out
 
 
@@ -59,7 +58,6 @@ class GaussianProcessLayer(gpytorch.models.AdditiveGridInducingVariationalGP):
     def forward(self, x):
         mean = self.mean_module(x)
         cov = self.cov_module(x)
-
         return gpytorch.distributions.MultivariateNormal(mean, cov)
 
 
@@ -75,7 +73,6 @@ class DKLModel(gpytorch.Module):
         features = self.feature_extractor(x)
         features = gpytorch.utils.grid.scale_to_bounds(features, self.grid_bounds[0], self.grid_bounds[1])
         res = self.gp_layer(features)
-
         return res
 
 
@@ -113,21 +110,11 @@ def test():
             pred = output.probs.argmax(1)
             correct += pred.eq(target.view_as(pred)).cpu().sum()
     test_loss /= len(test_loader.dataset)
-    print(f'Test Set | Average Loss: {test_loss:.6f}, Accuracy: {100. * correct / len(test_loader.dataset):.3f}%')
+    print(f'Test Set | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%')
 
 
 if __name__ == "__main__":
-    print("CUDA enabled:", CUDA)
-    # Data Augmentation
-    normalize = transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761])
-    crop = transforms.RandomCrop(32, padding=4)
-    flip = transforms.RandomHorizontalFlip()
-    common_trans = [transforms.ToTensor(), normalize]
-
-    train_compose = transforms.Compose([crop, flip] + common_trans)
-    test_compose = transforms.Compose(common_trans)
-
-
+    # Download Data
     dataset = 'cifar10'
 
     if dataset == 'cifar10':
@@ -146,6 +133,18 @@ if __name__ == "__main__":
         num_classes = 100
     else:
         raise RuntimeError('dataset must be either "cifar10" or "cifar100"')
+
+    # Data Augmentation
+    normalize = transforms.Normalize(
+        mean=[0.5071, 0.4867, 0.4408],
+        std=[0.2675, 0.2565, 0.2761]
+    )
+    crop = transforms.RandomCrop(32, padding=4)
+    flip = transforms.RandomHorizontalFlip()
+    common_trans = [transforms.ToTensor(), normalize]
+
+    train_compose = transforms.Compose([crop, flip] + common_trans)
+    test_compose = transforms.Compose(common_trans)
 
     feature_extractor = DenseNetFeatureExtractor(block_config=(6, 6, 6), num_classes=num_classes)
     num_features = feature_extractor.classifier.in_features
@@ -178,21 +177,25 @@ if __name__ == "__main__":
         gamma=0.1,
     )
 
+    print(f"{dataset}".capitalize())
+    print("CUDA enabled:", CUDA)
+
     with warnings.catch_warnings():
+        warnings.simplefilter('always')
         for epoch in range(1, n_epochs + 1):
             scheduler.step()
 
             with gpytorch.settings.use_toeplitz(False), gpytorch.settings.max_preconditioner_size(0):
                 train(epoch)
-                test()
+                if epoch % 10 == 0:
+                    test()
+                    state_dict = model.state_dict()
+                    likelihood_state_dict = likelihood.state_dict()
 
-            state_dict = model.state_dict()
-            likelihood_state_dict = likelihood.state_dict()
-
-            torch.save(
-                {
-                    'model': state_dict,
-                    'likelihood': likelihood_state_dict
-                },
-                'checkpoints/dkl_cifar_checkpoint.dat',
-            )
+                    torch.save(
+                        {
+                            'model': state_dict,
+                            'likelihood': likelihood_state_dict
+                        },
+                        'checkpoints/dkl_cifar_checkpoint.dat',
+                    )
