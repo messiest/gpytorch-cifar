@@ -105,7 +105,7 @@ def test(epoch):
             output = likelihood(model(data))
             pred = output.probs.argmax(1)
             correct += pred.eq(target.view_as(pred)).cpu().sum()
-    results = f' Test Set | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%'
+    results = f'Test:  {epoch:4d} Test | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%'
     print(results)
     with open('logs.txt', 'a') as file:
         file.write(results + '\n' )
@@ -183,7 +183,7 @@ if __name__ == "__main__":
         scheduler.step()
         with gpytorch.settings.use_toeplitz(False), gpytorch.settings.max_preconditioner_size(0):
             train(epoch)
-            if epoch % 1 == 0:
+            if epoch % 10 == 0:
                 test(epoch)
                 state_dict = model.state_dict()
                 likelihood_state_dict = likelihood.state_dict()
