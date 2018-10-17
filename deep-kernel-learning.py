@@ -78,7 +78,6 @@ class DKLModel(gpytorch.Module):
 def train(epoch, lr=0.1):
     model.train()
     likelihood.train()
-    # if CUDA: model.cuda(), likelihood.cuda()
     mll = gpytorch.mlls.VariationalMarginalLogLikelihood(
         likelihood,
         model,
@@ -122,7 +121,7 @@ def test(epoch):
 
 
 if __name__ == "__main__":
-    dataset = 'cifar10'
+    dataset = 'cifar100'
     print(f"{dataset}".upper())
 
     # Data Augmentation
@@ -203,5 +202,5 @@ if __name__ == "__main__":
                         'model': state_dict,
                         'likelihood': likelihood_state_dict
                     },
-                    'checkpoints/dkl_cifar_checkpoint.dat',
+                    f'checkpoints/dkl_{dataset}_checkpoint_{epoch}.dat',
                 )
