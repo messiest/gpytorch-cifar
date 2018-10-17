@@ -112,7 +112,7 @@ def test():
 
 
 if __name__ == "__main__":
-    dataset = 'cifar10'
+    dataset = 'cifar100'
     print(f"{dataset}".upper())
 
     # Data Augmentation
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
 
     # Download Data
-    if dataset == 'cifar100':
+    if dataset == 'cifar10':
         d_func = datasets.CIFAR10
         train_set = datasets.CIFAR10('data', train=True, transform=train_compose, download=True)
         test_set = datasets.CIFAR10('data', train=False, transform=test_compose)
