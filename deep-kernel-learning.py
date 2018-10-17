@@ -98,23 +98,15 @@ def train(epoch, lr=0.1):
 def test(epoch):
     model.eval()
     likelihood.eval()
-    mll = gpytorch.mlls.VariationalMarginalLogLikelihood(
-        likelihood,
-        model,
-        num_data=len(test_loader.dataset)
-    )
-    test_loss = 0
     correct = 0
     for data, target in test_loader:
         if CUDA: data, target = data.cuda(), target.cuda()  # no CUDA!
         with torch.no_grad():
             output = likelihood(model(data))
-            loss = -1 * mll(output, target)
-            test_loss += loss.item()
             pred = output.probs.argmax(1)
             correct += pred.eq(target.view_as(pred)).cpu().sum()
     test_loss /= len(test_loader.dataset)
-    results = f' Test Set | Loss: {test_loss: 4.4f} | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%'
+    results = f' Test Set | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%'
     print(results)
     with open('logs.txt', 'a') as file:
         file.write(results, '\n' )
