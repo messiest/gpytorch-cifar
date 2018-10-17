@@ -110,7 +110,8 @@ def test(epoch):
         if CUDA: data, target = data.cuda(), target.cuda()  # no CUDA!
         with torch.no_grad():
             output = likelihood(model(data))
-            test_loss += -1 * mll(output, target)
+            loss = -1 * mll(output, target)
+            test_loss += loss.item()
             pred = output.probs.argmax(1)
             correct += pred.eq(target.view_as(pred)).cpu().sum()
     test_loss /= len(test_loader.dataset)
