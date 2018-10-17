@@ -83,7 +83,7 @@ def train(epoch, lr=0.1):
         model,
         num_data=len(train_loader.dataset)
     )
-    desc = "Epoch: {:3d} | Loss: {: 4.4f}"
+    desc = "Epoch: {:4d} | Loss: {: 4.4f}"
     pbar = tqdm(train_loader, desc=desc)
     for batch_idx, (data, target) in enumerate(pbar):
         if CUDA: data, target = data.cuda(), target.cuda()  # got CUDA?
