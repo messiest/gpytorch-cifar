@@ -108,7 +108,7 @@ def test(epoch):
     results = f' Test Set | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%'
     print(results)
     with open('logs.txt', 'a') as file:
-        file.write(results, '\n' )
+        file.write(results + '\n' )
 
 
 if __name__ == "__main__":
