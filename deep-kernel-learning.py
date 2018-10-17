@@ -84,7 +84,6 @@ def train(epoch, lr=0.1):
         model,
         num_data=len(train_loader.dataset)
     )
-    train_loss = 0.
     desc = "Epoch: {:3d} | Loss: {: 4.4f}"
     pbar = tqdm(train_loader, desc=desc)
     for batch_idx, (data, target) in enumerate(pbar):
@@ -95,21 +94,30 @@ def train(epoch, lr=0.1):
         loss.backward()
         optimizer.step()
         if (batch_idx+1) % 50 == 0 or batch_idx == 0:
-            pbar.set_description(desc.format(epoch, loss.item()))
+            pbar.set_description(desc.format(epoch, loss))
 
-def test():
+def test(epoch):
     model.eval()
     likelihood.eval()
+    mll = gpytorch.mlls.VariationalMarginalLogLikelihood(
+        likelihood,
+        model,
+        num_data=len(test_loader.dataset)
+    )
     test_loss = 0
     correct = 0
     for data, target in test_loader:
         if CUDA: data, target = data.cuda(), target.cuda()  # no CUDA!
         with torch.no_grad():
             output = likelihood(model(data))
+            test_loss += -1 * mll(output, target)
             pred = output.probs.argmax(1)
             correct += pred.eq(target.view_as(pred)).cpu().sum()
     test_loss /= len(test_loader.dataset)
-    print(f' Test Set | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%')
+    results = f' Test Set | Loss: {test_loss: 4.4f} | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%'
+    print(results)
+    with open('logs.txt', 'a') as file:
+        file.write(results, '\n' )
 
 
 if __name__ == "__main__":
@@ -182,11 +190,10 @@ if __name__ == "__main__":
 
     for epoch in range(1, n_epochs + 1):
         scheduler.step()
-
         with gpytorch.settings.use_toeplitz(False), gpytorch.settings.max_preconditioner_size(0):
             train(epoch)
-            if epoch % 10 == 0:
-                test()
+            if epoch % 1 == 0:
+                test(epoch)
                 state_dict = model.state_dict()
                 likelihood_state_dict = likelihood.state_dict()
 
