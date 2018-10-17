@@ -78,14 +78,13 @@ class DKLModel(gpytorch.Module):
 def train(epoch, lr=0.1):
     model.train()
     likelihood.train()
-    # if CUDA: model.cuda(), likelihood.cuda()
     mll = gpytorch.mlls.VariationalMarginalLogLikelihood(
         likelihood,
         model,
         num_data=len(train_loader.dataset)
     )
     train_loss = 0.
-    desc = "Epoch: {:3d} | Loss: {: 4.4f}"
+    desc = "Epoch: {:4d} | Loss: {: 4.4f}"
     pbar = tqdm(train_loader, desc=desc)
     for batch_idx, (data, target) in enumerate(pbar):
         if CUDA: data, target = data.cuda(), target.cuda()  # got CUDA?
@@ -130,7 +129,7 @@ if __name__ == "__main__":
 
 
     # Download Data
-    if dataset == 'cifar10':
+    if dataset == 'cifar100':
         d_func = datasets.CIFAR10
         train_set = datasets.CIFAR10('data', train=True, transform=train_compose, download=True)
         test_set = datasets.CIFAR10('data', train=False, transform=test_compose)
@@ -195,5 +194,5 @@ if __name__ == "__main__":
                         'model': state_dict,
                         'likelihood': likelihood_state_dict
                     },
-                    'checkpoints/dkl_cifar_checkpoint.dat',
+                    f'checkpoints/dkl_{dataset}_checkpoint_{epoch}.dat',
                 )
