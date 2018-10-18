@@ -114,7 +114,7 @@ def test(epoch):
             output = likelihood(model(data))
             pred = output.probs.argmax(1)
             correct += pred.eq(target.view_as(pred)).cpu().sum()
-    results = f'Test:  {epoch:4d} Test | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%'
+    results = f'Test:  {epoch:4d} | Accuracy: {100. * correct / len(test_loader.dataset):.2f}%'
     print(results)
     with open('logs.txt', 'a') as file:
         file.write(results + '\n' )
