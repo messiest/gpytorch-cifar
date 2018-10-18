@@ -173,9 +173,10 @@ if __name__ == "__main__":
     n_epochs = args.epochs
     lr = args.lr
     optimizer = SGD(
-        [{'params': model.feature_extractor.parameters(), 'lr': lr},
-         {'params': model.gp_layer.parameters(), 'lr': 0.1 * lr},
-         {'params': likelihood.parameters(), 'lr': lr}],
+        [{'params': model.feature_extractor.parameters()},
+         {'params': model.gp_layer.hyperparameters(), 'lr': 0.01 * lr},
+         {'params': model.gp_layer.variational_parameters()},
+         {'params': likelihood.parameters()}],
         lr=lr,
         momentum=0.9,
         nesterov=True,
