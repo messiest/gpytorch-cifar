@@ -18,10 +18,19 @@ from tqdm import tqdm
 
 from densenet import DenseNet
 
-
-CUDA = torch.cuda.is_available()  # got GPU?
-
 warnings.simplefilter('ignore')  # filter deprecation warnings
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('dataset', type=str, default='cifar10', help='dataset to use')
+parser.add_argument('-epochs', type=int, default=500, help='total epochs')
+parser.add_argument('-batch_size', type=int, default=64, help='batch size')
+parser.add_argument('-num_workers', type=int, default=4, help='number of workers')
+parser.add_argument('-lr', type=float, default=0.1, help='learning rate')
+parser.add_argument('--cuda', action='store_true', help='enable GPU acceleration')
+args = parser.parse_args()
+
+CUDA = args.cuda if torch.cuda.is_available() else False  # got GPU?
 
 
 class DenseNetFeatureExtractor(DenseNet):
@@ -112,7 +121,7 @@ def test(epoch):
 
 
 if __name__ == "__main__":
-    dataset = 'cifar100'
+    dataset = args.dataset
     print(f"{dataset}".upper())
 
     # Data Augmentation
@@ -127,21 +136,22 @@ if __name__ == "__main__":
     train_compose = transforms.Compose([crop, flip] + common_trans)
     test_compose = transforms.Compose(common_trans)
 
-
     # Download Data
+    batch_size = args.batch_size
+    workers = args.num_workers
     if dataset == 'cifar10':
         d_func = datasets.CIFAR10
         train_set = datasets.CIFAR10('data', train=True, transform=train_compose, download=True)
         test_set = datasets.CIFAR10('data', train=False, transform=test_compose)
-        train_loader = torch.utils.data.DataLoader(train_set, batch_size=64, shuffle=True, num_workers=3, pin_memory=True)
-        test_loader = torch.utils.data.DataLoader(test_set, batch_size=64, shuffle=True, num_workers=3, pin_memory=True)
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
+        test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
         num_classes = 10
     elif dataset == 'cifar100':
         d_func = datasets.CIFAR100
         train_set = datasets.CIFAR100('data', train=True, transform=train_compose, download=True)
         test_set = datasets.CIFAR100('data', train=False, transform=test_compose)
-        train_loader = torch.utils.data.DataLoader(train_set, batch_size=64, shuffle=True, num_workers=3, pin_memory=True)
-        test_loader = torch.utils.data.DataLoader(test_set, batch_size=64, shuffle=True, num_workers=3, pin_memory=True)
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
+        test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
         num_classes = 100
     else:
         raise RuntimeError('dataset must be either "cifar10" or "cifar100"')
@@ -160,8 +170,8 @@ if __name__ == "__main__":
         model = model.cuda()
         likelihood = likelihood.cuda()
 
-    n_epochs = 100
-    lr = 0.1
+    n_epochs = args.epochs
+    lr = args.lr
     optimizer = SGD(
         [{'params': model.feature_extractor.parameters(), 'lr': lr},
          {'params': model.gp_layer.parameters(), 'lr': 0.1 * lr},
