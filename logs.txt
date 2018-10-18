@@ -1,0 +1,11 @@
+ Test Set | Accuracy: 1.00%
+Test:    10 Test | Accuracy: 18.00%
+Test:    20 Test | Accuracy: 8.00%
+Test:    30 Test | Accuracy: 28.00%
+Test:    40 Test | Accuracy: 29.00%
+Test:    50 Test | Accuracy: 2.00%
+Test:    60 Test | Accuracy: 0.00%
+Test:    70 Test | Accuracy: 1.00%
+Test:    80 Test | Accuracy: 1.00%
+Test:    90 Test | Accuracy: 1.00%
+Test:   100 Test | Accuracy: 2.00%
